@@ -8,7 +8,6 @@ import (
 /*
 	Todos for future development:
 	- Figure out go concurrency for faster crawl
-	- Sitemap as XML with layout, rather than just txt links
 	- Integration Test
 	- Acceptance tests for each func
  */
@@ -24,13 +23,17 @@ func main() {
 
 	if isValid {
 		// Crawl
-		fmt.Println("Crawling " + validUrl + "...\nThis operation take up to 5 minutes - you should see it progressing below.\n")
-		links := crawlSite(validUrl)
+		depth := intUserInput("What depth would you like to run to? (2): ")
+		fmt.Println("Crawling " + validUrl + "...\nThis operation take up to 5 minutes.\n")
+		links := crawlSite(validUrl, depth)
 
 		if len(links) > 1 {
-			fmt.Println("Saving to file...")
+			fmt.Println("Saving to files...")
 			saveToFile(formatToString(links))
-			fmt.Println("Saved to links.txt. Goodbye!")
+			fmt.Println("1 - Saved to links.txt")
+			saveAsXml(links)
+			fmt.Println("2 - Saved to webmap.xml")
+			fmt.Println("Goodbye!")
 		} else {
 			fmt.Println("Your site does not appear to link out to any other sitepages, so there are no links to see. Goodbye!")
 		}

@@ -1,3 +1,5 @@
 # spiderweb
 
-### An incredibly simplistic web crawler (to a depth of three) written in Golang
+### An incredibly simplistic web crawler written in Golang
+
+Outputs a webmap.xml file and links.txt file.

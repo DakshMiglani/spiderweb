@@ -5,21 +5,34 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 )
 
 // Formatter - this could be a bit nicer
 func formatToString(links []string) string {
-	consoleOut := ""
+	str := ""
 	for _, link := range links {
-		consoleOut = consoleOut + link + "\n"
+		str = str + link + "\n"
 	}
-	return consoleOut
+	return str
 }
 
 // Output
 func saveToFile(content string) {
 	err := ioutil.WriteFile("links.txt", []byte(content), 0644)
+	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+	}
+}
+
+func saveAsXml(links []string) {
+	str := "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n"
+	for _, link := range links {
+		str = str + "<url><loc>" + link + "</loc></url>\n"
+	}
+	content := str + "</urlset>"
+	err := ioutil.WriteFile("sitemap.xml", []byte(content), 0644)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
 	}
@@ -61,4 +74,25 @@ func userInput(req string) string {
 	stdin = strings.TrimSuffix(stdin, "\r") // Removes CR if present
 	stdin = strings.TrimSuffix(stdin, "\n") // Removes LF if present
 	return stdin
+}
+
+// Gets user input as int
+func intUserInput(req string) *int {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print(req)
+	stdin, _ := reader.ReadString('\n') // Reads line from console
+	stdin = strings.TrimSuffix(stdin, "\r\n") // Removes CRLF if present
+	stdin = strings.TrimSuffix(stdin, "\r") // Removes CR if present
+	stdin = strings.TrimSuffix(stdin, "\n") // Removes LF if present
+
+	if 1 > len(stdin) {
+		return nil
+	}
+
+	i, err := strconv.Atoi(stdin)
+	if err != nil {
+		fmt.Println("Invalid number. Please try again.")
+		os.Exit(2)
+	}
+	return &i
 }

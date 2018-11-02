@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"golang.org/x/net/html"
 	"net/http"
 	"strings"
@@ -43,9 +42,17 @@ func crawlLink(rootUrl string, givenUrl string) []string {
 	return links
 }
 
-func crawlSite(rootUrl string) []string {
+func crawlSite(rootUrl string, depth *int) []string {
+	// Default to 2 depth - 1 call
+	var maxDepth int
+	if depth == nil {
+		 maxDepth = 1
+	} else {
+		maxDepth = *depth-1
+	}
+
 	// Begin by crawling root
-	links := crawlSiteForLinks(rootUrl, rootUrl, nil, 2, 0)
+	links := crawlSiteForLinks(rootUrl, rootUrl, nil, maxDepth, 0)
 
 	// Return multiple links
 	return links
@@ -64,7 +71,6 @@ func crawlSiteForLinks(rootUrl string, link string, givenLinks *[]string, maxDep
 	for _, crawledLink := range crawledLinks {
 		if !stringInSlice(links, crawledLink) {
 			links = append(links, crawledLink)
-			fmt.Println(len(links))
 		}
 		if maxDepth > currentDepth {
 			links = crawlSiteForLinks(rootUrl, crawledLink, &links, maxDepth, currentDepth + 1)
