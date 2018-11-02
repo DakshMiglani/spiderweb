@@ -7,7 +7,7 @@ import (
 
 /*
 	Todos for future development:
-	- Figure out go concurrency for deeper crawl
+	- Figure out go concurrency for faster crawl
 	- Sitemap as XML with layout, rather than just txt links
 	- Integration Test
 	- Acceptance tests for each func
@@ -24,7 +24,7 @@ func main() {
 
 	if isValid {
 		// Crawl
-		fmt.Println("Crawling " + validUrl + " to a depth of three...\nThis operation take up to 10 minutes.\n")
+		fmt.Println("Crawling " + validUrl + "...\nThis operation take up to 5 minutes - you should see it progressing below.\n")
 		links := crawlSite(validUrl)
 
 		if len(links) > 1 {

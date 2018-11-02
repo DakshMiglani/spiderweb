@@ -43,7 +43,7 @@ func normalisePath(url string) string {
 }
 
 // Contains method for a string slice bc this isn't native to golang (??)
-func stringInSlice(str string, slice []string) bool {
+func stringInSlice(slice []string, str string) bool {
 	for _, sliceItem := range slice {
 		if sliceItem == str {
 			return true
