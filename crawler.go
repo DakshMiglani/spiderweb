@@ -1,17 +1,18 @@
 package main
 
 import (
-	"golang.org/x/net/html"
 	"net/http"
 	"strings"
+
+	"golang.org/x/net/html"
 )
 
-func crawlLink(rootUrl string, givenUrl string) []string {
+func crawlLink(rootURL string, givenURL string) []string {
 	// Normalise Given URL
-	givenUrl = normalisePath(givenUrl)
+	givenURL = normalisePath(givenURL)
 
 	// Make GET request
-	resp, _ := http.Get(givenUrl)
+	resp, _ := http.Get(givenURL)
 	body := resp.Body
 
 	// Extract links
@@ -25,30 +26,28 @@ func crawlLink(rootUrl string, givenUrl string) []string {
 		case tokenType == html.StartTagToken:
 			token := page.Token()
 			if token.Data == "a" {
-				link := getHref(token, givenUrl)
-				if len(link)>1 {
+				link := getHref(token, givenURL)
+				if len(link) > 1 {
 					link = normalisePath(link)
-					if strings.Contains(link, rootUrl) {
+					if strings.Contains(link, rootURL) {
 						links = append(links, link)
 					}
 				}
 			}
 		case tokenType == html.ErrorToken:
+			body.Close()
 			return links
 		}
 	}
-
-	body.Close()
-	return links
 }
 
 func crawlSite(rootUrl string, depth *int) []string {
 	// Default to 2 depth - 1 call
 	var maxDepth int
 	if depth == nil {
-		 maxDepth = 1
+		maxDepth = 1
 	} else {
-		maxDepth = *depth-1
+		maxDepth = *depth - 1
 	}
 
 	// Begin by crawling root
@@ -57,7 +56,6 @@ func crawlSite(rootUrl string, depth *int) []string {
 	// Return multiple links
 	return links
 }
-
 
 func crawlSiteForLinks(rootUrl string, link string, givenLinks *[]string, maxDepth int, currentDepth int) []string {
 	var links []string
@@ -73,7 +71,7 @@ func crawlSiteForLinks(rootUrl string, link string, givenLinks *[]string, maxDep
 			links = append(links, crawledLink)
 		}
 		if maxDepth > currentDepth {
-			links = crawlSiteForLinks(rootUrl, crawledLink, &links, maxDepth, currentDepth + 1)
+			links = crawlSiteForLinks(rootUrl, crawledLink, &links, maxDepth, currentDepth+1)
 		}
 	}
 	return links
@@ -107,4 +105,3 @@ func getHref(token html.Token, url string) string {
 
 	return ""
 }
-
