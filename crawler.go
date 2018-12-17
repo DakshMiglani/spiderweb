@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -12,8 +13,14 @@ func crawlLink(rootURL string, givenURL string) []string {
 	givenURL = normalisePath(givenURL)
 
 	// Make GET request
-	resp, _ := http.Get(givenURL)
+	resp, err := http.Get(givenURL)
+
+	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+	}
+
 	body := resp.Body
+	defer body.Close()
 
 	// Extract links
 	links := []string{}
@@ -35,7 +42,6 @@ func crawlLink(rootURL string, givenURL string) []string {
 				}
 			}
 		case tokenType == html.ErrorToken:
-			body.Close()
 			return links
 		}
 	}
