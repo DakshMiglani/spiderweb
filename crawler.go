@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"golang.org/x/net/html"
+	"github.com/PuerkitoBio/goquery"
 )
 
 func crawlLink(rootURL string, givenURL string) []string {
@@ -22,29 +22,31 @@ func crawlLink(rootURL string, givenURL string) []string {
 	body := resp.Body
 	defer body.Close()
 
+	dom, err := goquery.NewDocumentFromReader(body)
+
+	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+	}
+
 	// Extract links
 	links := []string{}
-	page := html.NewTokenizer(body)
 
-	for {
-		tokenType := page.Next()
+	// Find a tags and parse the links.
+	dom.Find("a").Each(func(i int, s *goquery.Selection) {
+		link, ok := s.Attr("href")
 
-		switch {
-		case tokenType == html.StartTagToken:
-			token := page.Token()
-			if token.Data == "a" {
-				link := getHref(token, givenURL)
-				if len(link) > 1 {
-					link = normalisePath(link)
-					if strings.Contains(link, rootURL) {
-						links = append(links, link)
-					}
+		if ok {
+			link = getHref(link, givenURL)
+			if len(link) > 1 {
+				link = normalisePath(link)
+				if strings.Contains(link, rootURL) {
+					links = append(links, link)
 				}
 			}
-		case tokenType == html.ErrorToken:
-			return links
 		}
-	}
+	})
+
+	return links
 }
 
 func crawlSite(rootUrl string, depth *int) []string {
@@ -84,29 +86,25 @@ func crawlSiteForLinks(rootUrl string, link string, givenLinks *[]string, maxDep
 }
 
 // Gets href attribute from a token
-func getHref(token html.Token, url string) string {
-	for _, a := range token.Attr {
-		if a.Key == "href" {
-			value := a.Val
-
-			if value[len(value)-1:] == "/" {
-				value = value[:len(value)-1]
-			}
-
-			if len(value) == 1 && (string(value[0]) == "/" || string(value[0]) == "#") {
-				return url
-			}
-
-			if len(value) > 1 && string(value[0]) == "/" {
-				value = url + value
-			}
-
-			if strings.Contains(value, "#") {
-				return value[strings.Index(value, "#"):]
-			}
-
-			return value
+func getHref(value string, url string) string {
+	if len(value) > 0 {
+		if value[len(value)-1:] == "/" {
+			value = value[:len(value)-1]
 		}
+
+		if len(value) == 1 && (string(value[0]) == "/" || string(value[0]) == "#") {
+			return url
+		}
+
+		if len(value) > 1 && string(value[0]) == "/" {
+			value = url + value
+		}
+
+		if strings.Contains(value, "#") {
+			return value[strings.Index(value, "#"):]
+		}
+
+		return value
 	}
 
 	return ""
